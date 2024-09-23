@@ -1,10 +1,22 @@
 const express = require('express')
 const app = express()
 
-const PORT = 3500
+const { PORT } = require('./configuration/config')
+const connectToDatabase = require('./database/connection')
 
 app.get('/', (request, response) => {
     response.status(200).send({ message: "It's working"})
 })
 
-app.listen(PORT, console.log(`Server is running at http://localhost:${PORT}`))
+connectToDatabase()
+    .then(() => {
+        try{
+            app.listen(PORT, console.log(`Server is running at http://localhost:${PORT}`))
+        }
+        catch(error) {
+            console.log(`Can't connect to DB : ${error}`)
+        }
+    })
+    .catch((error) => {
+        console.log(`Error while connecting to database : ${error}`)
+    })
