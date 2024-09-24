@@ -3,6 +3,8 @@ const router = express.Router()
 
 const { check } = require('express-validator')
 const { signup, login } = require('../controllers/authController')
+const { verifyUser } = require('../middleware/verify')
+const { authenticateUser } = require('../controllers/userController')
 
 // Signup route
 router.post(
@@ -46,6 +48,15 @@ router.post(
         .withMessage('Password length is at least 8 character'),
     
     login
+)
+
+
+router.get(
+    '/authenticate',
+
+    verifyUser,
+
+    authenticateUser
 )
 
 module.exports = router

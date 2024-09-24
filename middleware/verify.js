@@ -2,6 +2,7 @@ const jwt = require('jsonwebtoken')
 
 const { ACCESS_TOKEN } = require('../configuration/config')
 const userModel = require('../models/userModel')
+const { redisClient } = require('../cache/connection')
 
 const verifyUser = async (request, response, next) => {
     try {
@@ -9,7 +10,6 @@ const verifyUser = async (request, response, next) => {
 
         if(!authHeader) {
             return response.status(401).send({ message: 'Token not found'})
-
         }
 
         const cookie = authHeader.split('=')[1]
@@ -19,11 +19,25 @@ const verifyUser = async (request, response, next) => {
                 return response.status(401).send({ message: 'Session Expired'})
             }
 
+            const { id } = decode
+
+            // Check the id in redis 
+            const cacheUser = await redisClient.get(id)
+
+            if(cacheUser) {
+                console.log('get from the cache')
+                request.user = JSON.parse(cacheUser)
+                return next()
+            }
+
             const existingUser = await userModel.findOne(
                 { _id: id}
             ).select('+tenantId')
             request.user = existingUser 
 
+            // set the data in redis
+            await redisClient.setEx(id, 60 * 20, JSON.stringify(existingUser));
+            console.log('stored in redis')
             next()
             
         })

@@ -8,6 +8,7 @@ const { PORT } = require('./configuration/config')
 const connectToDatabase = require('./database/connection')
 
 const userRoute = require('./routes/userRoute')
+const { connectToRedis } = require('./cache/connection')
 
 
 app.use(cookieParser())
@@ -18,9 +19,30 @@ app.get('/', (request, response) => {
     response.status(200).send({ message: "It's working"})
 })
 
+app.use((req, res, next) => {
+    const start = Date.now(); // Capture the start time
+    
+    // Hook into the response finishing event
+    res.on('finish', () => {
+        const end = Date.now(); // Capture the end time
+        const duration = end - start; // Calculate the duration
+        console.log(`${req.method} ${req.originalUrl} took ${duration} ms`);
+    });
+
+    next(); // Proceed to the next middleware/route handler
+});
+
 app.use('/api/v1/user', userRoute)
 
 connectToDatabase()
+    .then(() => {
+        try{
+            connectToRedis()
+        } 
+        catch(error) {
+            console.log(`Can't Connect to Redis : ${error}`)
+        }
+    })
     .then(() => {
         try{
             app.listen(PORT, console.log(`Server is running at http://localhost:${PORT}`))
