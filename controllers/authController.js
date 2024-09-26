@@ -2,6 +2,7 @@ const userModel = require('../models/userModel')
 
 const bcrypt = require('bcryptjs')
 const { v4 : uuidv4} = require('uuid')
+const { createRootDirectory } = require('./directoryController')
 
 const signup = async (request, response) => {
     const { firstName, lastName, phone , email, password } = request.body
@@ -24,6 +25,8 @@ const signup = async (request, response) => {
         )
 
         await userToBeRegistered.save()
+
+        await createRootDirectory(userToBeRegistered._id, tenantId)
 
         let options = {
             httpOnly: true,
