@@ -9,6 +9,7 @@ const connectToDatabase = require('./database/connection')
 
 const userRoute = require('./routes/userRoute')
 const directoryRoute = require('./routes/directoryRoute')
+const fileRoute = require('./routes/fileRoute')
 const { connectToRedis } = require('./cache/connection')
 
 
@@ -35,6 +36,7 @@ app.use((req, res, next) => {
 
 app.use('/api/v1/user', userRoute)
 app.use('/api/v1/folders', directoryRoute)
+app.use('/api/v1/file', fileRoute)
 
 connectToDatabase()
     .then(() => {
