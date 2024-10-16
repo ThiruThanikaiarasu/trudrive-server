@@ -37,16 +37,6 @@ router.post(
 router.post(
     '/login', 
     
-    check('email')
-        .isEmail()
-        .withMessage('Enter a valid email')
-        .normalizeEmail(),
-    check('password')
-        .not()
-        .isEmpty()
-        .isLength({min: 8})
-        .withMessage('Password length is at least 8 character'),
-    
     login
 )
 

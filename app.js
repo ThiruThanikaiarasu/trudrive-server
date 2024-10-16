@@ -4,7 +4,7 @@ const app = express()
 const cookieParser = require('cookie-parser')
 const cors = require('cors')
 
-const { PORT } = require('./configuration/config')
+const { PORT, CORS_ORIGIN_URL } = require('./configuration/config')
 const connectToDatabase = require('./database/connection')
 
 const userRoute = require('./routes/userRoute')
@@ -12,7 +12,10 @@ const directoryRoute = require('./routes/directoryRoute')
 const fileRoute = require('./routes/fileRoute')
 const { connectToRedis } = require('./cache/connection')
 
-
+app.use(cors({
+    origin: CORS_ORIGIN_URL, 
+    credentials: true
+}))
 app.use(cookieParser())
 app.use(express.urlencoded({ extended: false}))
 app.use(express.json())
