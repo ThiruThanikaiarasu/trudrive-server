@@ -13,7 +13,7 @@ const createFileSchema = (tenantId) => {
                 ref: 'users',
                 required: [true, "Owner is a mandatory field"]
             },
-            filename: {
+            fileUrl: {
                 type: String,
                 required: [true, "File name is a mandatory field"]
             },
@@ -29,32 +29,6 @@ const createFileSchema = (tenantId) => {
                 type: Number,
                 required: [true, 'File size is a mandatory field']
             },
-            lastAccessAt: {
-                type: Date,
-            },
-            lastAccessBy: {
-                type: mongoose.Schema.Types.ObjectId,
-                ref: 'users',
-                validate: {
-                    validator: function() {
-                        return this.lastAccessAt ? !!value : true;
-                    },
-                    message: 'Last access by is required when last access is given'
-                }
-            },
-            accessList: [
-                {
-                    user: {
-                        type: mongoose.Schema.Types.ObjectId,
-                        ref: 'users'
-                    },
-                    accessType: {
-                        type: String,
-                        enum: ['viewer', 'owner'],
-                        default: 'viewer'
-                    }
-                }
-            ],
             parentDirectory: {
                 type: mongoose.Schema.Types.ObjectId,
                 ref: `${tenantId}_directories`

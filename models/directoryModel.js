@@ -21,32 +21,6 @@ const createDirectorySchema = (tenantId) => {
                 type: mongoose.Schema.Types.ObjectId,
                 ref: `${tenantId}_directories`
             },
-            lastAccessAt: {
-                type: Date,
-            },
-            lastAccessBy: {
-                type: mongoose.Schema.Types.ObjectId,
-                ref: 'users',
-                validate: {
-                    validator: function() {
-                        return this.lastAccessAt ? !!value : true;
-                    },
-                    message: 'Last access by is required when last access is given'
-                }
-            },
-            accessList: [
-                {
-                    user: {
-                        type: mongoose.Schema.Types.ObjectId,
-                        ref: 'users'
-                    },
-                    accessType: {
-                        type: String,
-                        enum: ['viewer', 'owner'],
-                        default: 'viewer'
-                    }
-                }
-            ],
         },
         {
             timestamps: true
