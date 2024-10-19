@@ -13,17 +13,25 @@ const createANewDirectory = async (tenantId, directoryData) => {
 
     const newDirectory = new directory(directoryData)
 
-    return await newDirectory.save()
+    return newDirectory.save()
 }
 
 const checkForExistingDirectory = async (tenantId, urlId) => {
     const directory = directoryModel(tenantId)
 
-    return await directory.findOne({ urlId })
+    return directory.findOne({ urlId })
+}
+
+const getFilesAndDirectoriesWithUrlId = async (tenantId, urlId) => {
+    const directory = directoryModel(tenantId)
+
+    return directory.find({ parentDirectory: urlId })
+
 }
 
 module.exports = {
     createDirectory,
     createANewDirectory,
-    checkForExistingDirectory
+    checkForExistingDirectory,
+    getFilesAndDirectoriesWithUrlId
 }

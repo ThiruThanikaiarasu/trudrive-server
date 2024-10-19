@@ -1,6 +1,6 @@
 
 const directoryModel = require('../models/directoryModel')
-const { createDirectory, createANewDirectory, checkForExistingDirectory } = require('../services/directoryServices')
+const { createDirectory, createANewDirectory, checkForExistingDirectory, getFilesAndDirectoriesWithUrlId } = require('../services/directoryServices')
 const { createUrlIdForDirectory } = require('../services/utilityServices')
 const { setResponseBody } = require('../utils/responseFormatter')
 
@@ -54,8 +54,29 @@ const createChildDirectory = async (request, response) => {
     }
 }
 
+const getFilesAndDirectoriesByParentId = async (request, response) => {
+    const urlId = request.params.parentDirectory
+    const tenantId = request.user.tenantId
+    try {
+        const existingParentDirectory = await checkForExistingDirectory(tenantId, urlId)
+
+        if(!existingParentDirectory) {
+            return response.status(404).send(setResponseBody("Parent directory not found", "not_found", null))
+        }
+
+        const filesAndDirectories = await getFilesAndDirectoriesWithUrlId(tenantId, urlId)
+        console.log(filesAndDirectories)
+
+        response.status(200).send(setResponseBody("Resource retrieved successfully", null, filesAndDirectories))
+    }
+    catch(error) {
+        response.status(500).send(setResponseBody(error.message, "server_error", null))
+    }
+}
+
 module.exports = {
     createRootDirectory,
     createChildDirectory,
+    getFilesAndDirectoriesByParentId
 
 }

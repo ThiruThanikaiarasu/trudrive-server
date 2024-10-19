@@ -2,7 +2,7 @@ const express = require('express')
 const router = express.Router()
 
 const { verifyUser } = require('../middleware/verify')
-const { createChildDirectory } = require('../controllers/directoryController')
+const { createChildDirectory, getFilesAndDirectoriesByParentId } = require('../controllers/directoryController')
 const { check } = require('express-validator')
 
 
@@ -13,6 +13,14 @@ router.post(
     verifyUser,
 
     createChildDirectory
+)
+
+router.get(
+    '/:parentDirectory',
+
+    verifyUser,
+
+    getFilesAndDirectoriesByParentId
 )
 
 module.exports = router
