@@ -1,6 +1,5 @@
 const jwt = require('jsonwebtoken')
 
-const { ACCESS_TOKEN } = require('../configuration/config')
 const userModel = require('../models/userModel')
 const { redisClient } = require('../cache/connection')
 
@@ -14,7 +13,7 @@ const verifyUser = async (request, response, next) => {
 
         const cookie = authHeader.split('=')[1]
         
-        jwt.verify(cookie, ACCESS_TOKEN, async (error, decode) => {
+        jwt.verify(cookie, process.env.ACCESS_TOKEN, async (error, decode) => {
             if(error) {
                 return response.status(401).send({ message: 'Session Expired'})
             }

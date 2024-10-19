@@ -2,8 +2,6 @@ const mongoose = require('mongoose')
 const bcrypt = require('bcryptjs')
 const jwt = require('jsonwebtoken')
 
-const { ACCESS_TOKEN } = require('../configuration/config')
-
 const userSchema = new mongoose.Schema(
     {
         firstName: {
@@ -74,7 +72,7 @@ userSchema.pre("save", function(next) {
 userSchema.methods.generateAccessJWT = function() {
     let payload = {id: this._id}
 
-    return jwt.sign(payload, ACCESS_TOKEN, {expiresIn: '30d'})
+    return jwt.sign(payload, process.env.ACCESS_TOKEN, {expiresIn: '30d'})
 }
 
 module.exports = mongoose.model.users || mongoose.model("users", userSchema)

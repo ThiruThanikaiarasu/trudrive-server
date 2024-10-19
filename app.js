@@ -1,10 +1,11 @@
+require('dotenv').config()
 const express = require('express')
 const app = express()
 
 const cookieParser = require('cookie-parser')
 const cors = require('cors')
 
-const { PORT, CORS_ORIGIN_URL } = require('./configuration/config')
+const PORT = process.env.PORT
 const connectToDatabase = require('./database/connection')
 
 const userRoute = require('./routes/userRoute')
@@ -13,7 +14,7 @@ const fileRoute = require('./routes/fileRoute')
 const { connectToRedis } = require('./cache/connection')
 
 app.use(cors({
-    origin: CORS_ORIGIN_URL, 
+    origin: process.env.CORS_ORIGIN_URL, 
     credentials: true
 }))
 app.use(cookieParser())

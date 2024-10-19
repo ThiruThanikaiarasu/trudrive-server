@@ -1,13 +1,11 @@
 const { createClient } = require('redis');
 
-const { REDIS_HOST, REDIS_PASSWORD, REDIS_PORT } = require('../configuration/config')
-
 // Redis client setup
 const redisClient = createClient({
-    password: REDIS_PASSWORD,
+    password: process.env.REDIS_PASSWORD,
     socket: {
-        host: REDIS_HOST,
-        port: REDIS_PORT
+        host: process.env.REDIS_HOST,
+        port: process.env.REDIS_PORT
     }
 });
 
