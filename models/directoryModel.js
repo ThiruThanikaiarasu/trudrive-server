@@ -18,8 +18,8 @@ const createDirectorySchema = (tenantId) => {
                 required: [true, 'Directory name is a mandatory field']
             },
             parentDirectory: {
-                type: mongoose.Schema.Types.ObjectId,
-                ref: `${tenantId}_directories`
+                type: String,
+                required: [true, 'Parent Directory is a mandatory field']
             },
         },
         {

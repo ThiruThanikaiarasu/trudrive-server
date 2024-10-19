@@ -27,13 +27,13 @@ const signup = async (request, response) => {
         
         const userToBeRegistered = await createUser(newUser)
 
-        await createRootDirectory(userToBeRegistered._id, tenantId)
-
+        const rootDirectory = await createRootDirectory(userToBeRegistered._id, tenantId)
+        console.log(rootDirectory)
         const token = generateToken(userToBeRegistered)
         setTokenCookie(response, token)
 
         const {password: userPassword, __v: userVersion, tenantId: userTenantId, _id: userId, ...userData} = userToBeRegistered._doc
-        
+        userData.rootUrlId = rootDirectory.urlId
         response.status(201).send(setResponseBody("User Created Successfully", null, userData))
     } 
     catch(error) {

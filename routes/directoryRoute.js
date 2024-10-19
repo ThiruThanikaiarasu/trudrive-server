@@ -10,11 +10,6 @@ const { check } = require('express-validator')
 router.post(
     '/:parentDirectory',
 
-    check('directoryName')
-        .not()
-        .isEmpty()
-        .withMessage('Enter a valid Directory name'),
-
     verifyUser,
 
     createChildDirectory

@@ -1,7 +1,8 @@
 
 const directoryModel = require('../models/directoryModel')
-const { createDirectory } = require('../services/directoryServices')
+const { createDirectory, createANewDirectory, checkForExistingDirectory } = require('../services/directoryServices')
 const { createUrlIdForDirectory } = require('../services/utilityServices')
+const { setResponseBody } = require('../utils/responseFormatter')
 
 const createRootDirectory = async (userId, tenantId) => {
 
@@ -17,35 +18,38 @@ const createRootDirectory = async (userId, tenantId) => {
 }
 
 const createChildDirectory = async (request, response) => {
-    const user = request.user 
-    let { parentDirectory } = request.params
+    const userId = request.user._id 
+    const tenantId = request.user.tenantId
+    const { parentDirectory } = request.params
     const { directoryName } = request.body
+
     try{
 
-        const directory = directoryModel(user.tenantId)
-
-        if(parentDirectory == 'home') {
-            const rootDirectory = await directory.findOne({ name: 'root'})
-            parentDirectory = rootDirectory._id
-        } else {
-            const rootDirectory = await directory.findOne({ urlId: parentDirectory })
-            parentDirectory = rootDirectory._id
+        if (!directoryName) {
+            return res.status(400).send({ message: "Missing required fields" });
         }
 
-        const childDirectory = new directory(
-            {
-                urlId: createUrlIdForDirectory(user.tenantId),
-                owner: user._id,
-                name: directoryName,
-                parentDirectory: parentDirectory
-            }
-        )
+        const existingParentDirectory = await checkForExistingDirectory(tenantId, parentDirectory)
 
-        childDirectory.save()
+        if(!existingParentDirectory) {
+            return response.status(404).send(setResponseBody("Parent directory not found", "not_found", null))
+        }
 
-        response.status(201).send({ message: "Directory created successfully"})
+        const directoryData = {
+            urlId: createUrlIdForDirectory(tenantId),
+            owner: userId,
+            name: directoryName,
+            parentDirectory: parentDirectory,
+        }
+
+        const newDirectory = await createANewDirectory(tenantId, directoryData)
+
+        const { _id: _, ...newDirectoryData } = newDirectory._doc
+
+        response.status(201).send(setResponseBody("Directory created successfully", null, newDirectoryData))
     }
     catch(error) {
+        console.log(error)
         response.status(500).send({ message: error.message})
     }
 }
