@@ -1,30 +1,19 @@
-const { init } = require('@paralleldrive/cuid2')
 
 const directoryModel = require('../models/directoryModel')
-
-const createUrlIdForDirectory = (tenantId) => {
-    const urlId = init({
-        random: Math.random,
-        length: 12,
-        fingerprint: tenantId
-    })
-
-    return urlId()
-}
+const { createDirectory } = require('../services/directoryServices')
+const { createUrlIdForDirectory } = require('../services/utilityServices')
 
 const createRootDirectory = async (userId, tenantId) => {
 
-        const directory = directoryModel(tenantId)
+    const directoryData = {
+            urlId: createUrlIdForDirectory(tenantId),
+            owner: userId,
+            name: 'root',
+    }
 
-        const rootDirectory = new directory(
-            {
-                urlId: createUrlIdForDirectory(tenantId),
-                owner: userId,
-                name: 'root',
-            }
-        )
+    const rootDirectory = await createDirectory(tenantId, directoryData)
 
-        await rootDirectory.save()
+    return rootDirectory
 }
 
 const createChildDirectory = async (request, response) => {

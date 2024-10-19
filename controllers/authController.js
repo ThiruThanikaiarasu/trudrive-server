@@ -4,44 +4,40 @@ const bcrypt = require('bcryptjs')
 const { v4 : uuidv4} = require('uuid')
 const { createRootDirectory } = require('./directoryController')
 const { setResponseBody } = require('../utils/responseFormatter')
-const { findUserByEmailWithPassword } = require('../services/userServices')
+const { findUserByEmailWithPassword, findUserByEmail, createUser } = require('../services/userServices')
+const { generateToken, setTokenCookie } = require('../services/tokenServices')
 
 const signup = async (request, response) => {
     const { firstName, lastName, phone , email, password } = request.body
 
     try{
-        const existingUser = await userModel.findOne({ email })
+        const existingUser = await findUserByEmail(email)
         if(existingUser) {
-            return response.status(409).send({ message: 'Email id already exist' })
+            return response.status(409).send(setResponseBody("Email id already exist", "existing_email", null))
         }
         const tenantId = uuidv4()
-        const userToBeRegistered = new userModel(
-            {
-                firstName, 
-                lastName, 
-                phone, 
-                email, 
-                password, 
-                tenantId 
+        const newUser = {
+                    firstName, 
+                    lastName, 
+                    phone, 
+                    email, 
+                    password, 
+                    tenantId 
             }
-        )
-
-        await userToBeRegistered.save()
+        
+        const userToBeRegistered = await createUser(newUser)
 
         await createRootDirectory(userToBeRegistered._id, tenantId)
 
-        let options = {
-            httpOnly: true,
-            secure: true,
-            sameSite: 'None'
-        }
+        const token = generateToken(userToBeRegistered)
+        setTokenCookie(response, token)
 
-        const token = userToBeRegistered.generateAccessJWT()
-        response.cookie('SessionID', token, options)
-        response.status(201).send({ message: 'User created successfully'})
+        const {password: userPassword, __v: userVersion, tenantId: userTenantId, _id: userId, ...userData} = userToBeRegistered._doc
+        
+        response.status(201).send(setResponseBody("User Created Successfully", null, userData))
     } 
     catch(error) {
-        response.status(500).send({ message: error.message})
+        response.status(500).send(setResponseBody(error.message, "server_error", null))
     }
 }
 
@@ -70,7 +66,7 @@ const login = async (request, response) => {
 
         const token = existingUser.generateAccessJWT()     
         response.cookie('SessionID', token, options)
-        response.status(200).send(setResponseBody("Logged in Successfully", null, [userData]))
+        response.status(200).send(setResponseBody("Logged in Successfully", null, userData))
     } 
     catch(error) {
         response.status(500).send(setResponseBody(error.message, "server_error", null))

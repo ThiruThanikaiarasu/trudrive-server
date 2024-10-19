@@ -1,9 +1,20 @@
 const userModel = require("../models/userModel")
 
-const findUserByEmailWithPassword = async ( email ) => {
-    return await userModel.findOne({ email }).select('+password')
+const findUserByEmailWithPassword = ( email ) => {
+    return userModel.findOne({ email }).select('+password')
+}
+
+const findUserByEmail = (email) => {
+    return userModel.findOne({ email })
+}
+
+const createUser = async (userData) => {
+    const userToBeRegistered = new userModel(userData)
+    return await userToBeRegistered.save()
 }
 
 module.exports = {
-    findUserByEmailWithPassword
+    findUserByEmailWithPassword,
+    findUserByEmail,
+    createUser
 }
