@@ -1,5 +1,4 @@
 
-const directoryModel = require('../models/directoryModel')
 const { createDirectory, createANewDirectory, checkForExistingDirectory, getFilesAndDirectoriesWithUrlId } = require('../services/directoryServices')
 const { createUrlIdForDirectory } = require('../services/utilityServices')
 const { setResponseBody } = require('../utils/responseFormatter')

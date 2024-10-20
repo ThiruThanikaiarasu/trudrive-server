@@ -1,7 +1,7 @@
 const userModel = require("../models/userModel")
 
 const findUserByEmailWithPassword = ( email ) => {
-    return userModel.findOne({ email }).select('+password')
+    return userModel.findOne({ email }).select('+password tenantId email firstName lastName role')
 }
 
 const findUserByEmail = (email) => {

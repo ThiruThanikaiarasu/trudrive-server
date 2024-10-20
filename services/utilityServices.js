@@ -10,6 +10,17 @@ const createUrlIdForDirectory = (tenantId) => {
     return urlId()
 }
 
+const createUrlIdForFile = (tenantId) => {
+    const urlId = init({
+        random: Math.random,
+        length: 20,
+        fingerprint: tenantId
+    })
+
+    return urlId()
+}
+
 module.exports = {
-    createUrlIdForDirectory
+    createUrlIdForDirectory,
+    createUrlIdForFile
 }

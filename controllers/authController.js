@@ -6,6 +6,7 @@ const { createRootDirectory } = require('./directoryController')
 const { setResponseBody } = require('../utils/responseFormatter')
 const { findUserByEmailWithPassword, findUserByEmail, createUser } = require('../services/userServices')
 const { generateToken, setTokenCookie } = require('../services/tokenServices')
+const directoryModel = require('../models/directoryModel')
 
 const signup = async (request, response) => {
     const { firstName, lastName, phone , email, password } = request.body
@@ -58,8 +59,11 @@ const login = async (request, response) => {
             secure: true,
             sameSite: 'None'
         }
+        const {password: _, _id, role, __v, tenantId, ...userData} = existingUser._doc
 
-        const {password: _, _id, role, __v, ...userData} = existingUser._doc
+        const directory = directoryModel(existingUser.tenantId)
+        const rootDirectory = await directory.findOne({ name: "root"})
+        userData.rootUrlId = rootDirectory.urlId
 
         const token = existingUser.generateAccessJWT()     
         response.cookie('SessionID', token, options)
