@@ -30,8 +30,20 @@ const createFileSchema = (tenantId) => {
                 required: [true, 'File size is a mandatory field']
             },
             parentDirectory: {
-                type: mongoose.Schema.Types.ObjectId,
-                ref: `${tenantId}_directories`
+                type: String,
+                
+            },
+            width: {
+                type: Number,
+                required: function () {
+                    return this.mimetype && this.mimetype.startsWith('image/');
+                },
+            },
+            height: {
+                type: Number,
+                required: function () {
+                    return this.mimetype && this.mimetype.startsWith('image/');
+                },
             }
         },
         {

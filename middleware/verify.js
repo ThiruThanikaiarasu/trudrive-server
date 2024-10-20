@@ -24,7 +24,6 @@ const verifyUser = async (request, response, next) => {
             const cacheUser = await redisClient.get(id)
 
             if(cacheUser) {
-                console.log('get from the cache')
                 request.user = JSON.parse(cacheUser)
                 return next()
             }
@@ -36,7 +35,6 @@ const verifyUser = async (request, response, next) => {
 
             // set the data in redis
             await redisClient.setEx(id, 60 * 20, JSON.stringify(existingUser));
-            console.log('stored in redis')
             next()
             
         })

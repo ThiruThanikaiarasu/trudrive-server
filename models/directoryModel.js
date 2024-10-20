@@ -19,7 +19,6 @@ const createDirectorySchema = (tenantId) => {
             },
             parentDirectory: {
                 type: String,
-                required: [true, 'Parent Directory is a mandatory field']
             },
         },
         {

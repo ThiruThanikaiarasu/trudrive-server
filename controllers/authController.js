@@ -28,7 +28,6 @@ const signup = async (request, response) => {
         const userToBeRegistered = await createUser(newUser)
 
         const rootDirectory = await createRootDirectory(userToBeRegistered._id, tenantId)
-        console.log(rootDirectory)
         const token = generateToken(userToBeRegistered)
         setTokenCookie(response, token)
 
@@ -42,7 +41,6 @@ const signup = async (request, response) => {
 }
 
 const login = async (request, response) => {
-    console.log("first")
     const { email, password } = request.body 
     try{
         const existingUser = await findUserByEmailWithPassword(email)
@@ -62,7 +60,6 @@ const login = async (request, response) => {
         }
 
         const {password: _, _id, role, __v, ...userData} = existingUser._doc
-        console.log(userData)
 
         const token = existingUser.generateAccessJWT()     
         response.cookie('SessionID', token, options)

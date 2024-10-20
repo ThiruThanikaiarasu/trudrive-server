@@ -8,11 +8,12 @@ const upload = require('../middleware/upload')
 const multipleUpload = upload.fields([{ name: 'files'}])
 
 router.post(
-    '/:parentDirectory',
+    '/upload/:parentDirectory',
     
     verifyUser,
     
     multipleUpload,
+    // upload,
 
     addNewFilesToCorrespondingDirectory  
 )

@@ -1,7 +1,9 @@
 const { init } = require('@paralleldrive/cuid2')
-
-const directoryModel = require("../models/directoryModel")
-const fileModel = require("../models/fileModel")
+const s3  = require('../configuration/s3Config')
+const crypto = require('crypto')
+const sizeOf = require('image-size')
+const { PutObjectCommand } = require('@aws-sdk/client-s3')
+const fileModel = require('../models/fileModel')
 
 const createUrlIdForFile = (tenantId) => {
     const urlId = init({
@@ -15,37 +17,60 @@ const createUrlIdForFile = (tenantId) => {
 
 const addNewFilesToCorrespondingDirectory = async (request, response) => {
 
-    const uploadedFiles = request.files.files
-    const user = request.user
-    let { parentDirectory } = request.params
+    const files = request.files['files']
+    const userId = request.user._id
+    const tenantId = request.user.tenantId
+    const { parentDirectory } = request.params
     try {
 
-        const directory = directoryModel(user.tenantId)
-        const files = fileModel(user.tenantId)
-
-        if(parentDirectory == 'home') {
-            const rootDirectory = await directory.findOne({ name: 'root'})
-            parentDirectory = rootDirectory._id
-        } else {
-            const rootDirectory = await directory.findOne({ urlId: parentDirectory })
-            parentDirectory = rootDirectory._id
+        if (!request.files || request.files.length === 0) {
+            return response.status(400).json({ message: 'No files uploaded' });
         }
 
-        const filesToUpload = uploadedFiles.map(file => (
-            new files(
-                {
-                    urlId: createUrlIdForFile(user.tenantId),
-                    owner: user._id,
-                    filename: file.filename,
-                    originalname: file.originalname,
-                    mimetype: file.mimetype,
-                    size: file.size,
-                    parentDirectory: parentDirectory
-                }
-            )
-        ))
+        const file = fileModel(tenantId)
 
-        await files.insertMany(filesToUpload)
+        const fileDocuments = []
+
+        const randomImageName = () => {
+            return crypto.randomBytes(32).toString('hex')
+        }
+
+        for(const file of files) {
+            
+            const imageName = randomImageName()
+    
+            const params = {
+                Bucket: process.env.BUCKET_NAME,
+                Key: imageName, 
+                Body: file.buffer,
+                ContentType: file.mimetype
+            }
+            const command = new PutObjectCommand(params)
+    
+            await s3.send(command)
+
+            let width = null
+            let height = null
+            if (file.mimetype.startsWith('image/')) {
+                const dimensions = sizeOf(file.buffer)
+                width = dimensions.width
+                height = dimensions.height
+            }
+
+            fileDocuments.push({
+                urlId:  createUrlIdForFile(tenantId),
+                owner: userId,
+                fileUrl: imageName,
+                originalname: file.originalname,
+                mimetype: file.mimetype,
+                size: file.size,
+                parentDirectory: parentDirectory,
+                width,
+                height
+            })
+        }
+        
+        const savedFiles = await file.insertMany(fileDocuments)
 
         response.status(201).send({ message: "Files Uploaded Successfully" })
     }

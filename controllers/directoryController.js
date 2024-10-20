@@ -10,6 +10,7 @@ const createRootDirectory = async (userId, tenantId) => {
             urlId: createUrlIdForDirectory(tenantId),
             owner: userId,
             name: 'root',
+            parentDirectory: null
     }
 
     const rootDirectory = await createDirectory(tenantId, directoryData)
@@ -49,7 +50,6 @@ const createChildDirectory = async (request, response) => {
         response.status(201).send(setResponseBody("Directory created successfully", null, newDirectoryData))
     }
     catch(error) {
-        console.log(error)
         response.status(500).send({ message: error.message})
     }
 }
@@ -65,7 +65,6 @@ const getFilesAndDirectoriesByParentId = async (request, response) => {
         }
 
         const filesAndDirectories = await getFilesAndDirectoriesWithUrlId(tenantId, urlId)
-        console.log(filesAndDirectories)
 
         response.status(200).send(setResponseBody("Resource retrieved successfully", null, filesAndDirectories))
     }
