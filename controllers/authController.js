@@ -1,12 +1,9 @@
-const userModel = require('../models/userModel')
-
 const bcrypt = require('bcryptjs')
 const { v4 : uuidv4} = require('uuid')
 const { createRootDirectory } = require('./directoryController')
 const { setResponseBody } = require('../utils/responseFormatter')
 const { findUserByEmailWithPassword, findUserByEmail, createUser } = require('../services/userServices')
 const { generateToken, setTokenCookie } = require('../services/tokenServices')
-const directoryModel = require('../models/directoryModel')
 
 const signup = async (request, response) => {
     const { firstName, lastName, phone , email, password } = request.body
@@ -28,12 +25,11 @@ const signup = async (request, response) => {
         
         const userToBeRegistered = await createUser(newUser)
 
-        const rootDirectory = await createRootDirectory(userToBeRegistered._id, tenantId)
+        await createRootDirectory(userToBeRegistered._id, tenantId)
         const token = generateToken(userToBeRegistered)
         setTokenCookie(response, token)
 
         const {password: userPassword, __v: userVersion, tenantId: userTenantId, _id: userId, ...userData} = userToBeRegistered._doc
-        userData.rootUrlId = rootDirectory.urlId
         response.status(201).send(setResponseBody("User Created Successfully", null, userData))
     } 
     catch(error) {
@@ -60,10 +56,6 @@ const login = async (request, response) => {
             sameSite: 'None'
         }
         const {password: _, _id, role, __v, tenantId, ...userData} = existingUser._doc
-
-        const directory = directoryModel(existingUser.tenantId)
-        const rootDirectory = await directory.findOne({ name: "root"})
-        userData.rootUrlId = rootDirectory.urlId
 
         const token = existingUser.generateAccessJWT()     
         response.cookie('SessionID', token, options)

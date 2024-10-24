@@ -2,9 +2,16 @@ const express = require('express')
 const router = express.Router()
 
 const { verifyUser } = require('../middleware/verify')
-const { createChildDirectory, getFilesAndDirectoriesByParentId } = require('../controllers/directoryController')
-const { check } = require('express-validator')
+const { createChildDirectory, getFilesAndDirectoriesByParentId, createDirectoryUnderRoot } = require('../controllers/directoryController')
 
+
+router.post(
+    '/root',
+
+    verifyUser,
+
+    createDirectoryUnderRoot
+)
 
 // To Create Child Directory 
 router.post(

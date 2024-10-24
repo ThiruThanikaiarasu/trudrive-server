@@ -1,5 +1,4 @@
-
-const { createDirectory, createANewDirectory, checkForExistingDirectory, getFilesAndDirectoriesWithUrlId } = require('../services/directoryServices')
+const { createDirectory, createANewDirectory, checkForExistingDirectory, getFilesAndDirectoriesWithUrlId, findRootDirectory } = require('../services/directoryServices')
 const { createUrlIdForDirectory } = require('../services/utilityServices')
 const { setResponseBody } = require('../utils/responseFormatter')
 
@@ -15,6 +14,28 @@ const createRootDirectory = async (userId, tenantId) => {
     const rootDirectory = await createDirectory(tenantId, directoryData)
 
     return rootDirectory
+}
+
+const createDirectoryUnderRoot = async (request, response) => {
+    const userId = request.user._id
+    const tenantId = request.user.tenantId
+    const { directoryName } = request.body
+    try {
+        const rootDirectory = await findRootDirectory(tenantId)
+
+        const directoryData = {
+            urlId: createUrlIdForDirectory(tenantId),
+            owner: userId,
+            name: directoryName,
+            parentDirectory: rootDirectory.urlId,
+        }
+        const newDirectory = await createDirectory(tenantId, directoryData)
+
+        response.status(201).send(setResponseBody("Folder created Successfully", null, newDirectory))
+    }
+    catch(error) {
+        response.status(500).send({ message: error.message})
+    }
 }
 
 const createChildDirectory = async (request, response) => {
@@ -73,6 +94,7 @@ const getFilesAndDirectoriesByParentId = async (request, response) => {
 }
 
 module.exports = {
+    createDirectoryUnderRoot,
     createRootDirectory,
     createChildDirectory,
     getFilesAndDirectoriesByParentId

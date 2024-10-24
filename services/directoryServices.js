@@ -1,5 +1,13 @@
 const directoryModel = require("../models/directoryModel")
 
+const findRootDirectory = async (tenantId) => {
+    const directory = directoryModel(tenantId)
+
+    const rootDirectory = await directory.findOne({ name: "root" })
+
+    return rootDirectory
+}
+
 const createDirectory = async (tenantId, directoryData) => {
     const directory = directoryModel(tenantId)
 
@@ -30,6 +38,7 @@ const getFilesAndDirectoriesWithUrlId = async (tenantId, urlId) => {
 }
 
 module.exports = {
+    findRootDirectory,
     createDirectory,
     createANewDirectory,
     checkForExistingDirectory,
