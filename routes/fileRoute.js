@@ -2,10 +2,20 @@ const express = require('express')
 const router = express.Router()
 
 const { verifyUser } = require('../middleware/verify')
-const { addNewFilesToCorrespondingDirectory } = require('../controllers/fileController')
+const { addNewFilesToCorrespondingDirectory, addNewFilesToRootDirectory } = require('../controllers/fileController')
 const upload = require('../middleware/upload')
 
 const multipleUpload = upload.fields([{ name: 'files'}])
+
+router.post(
+    '/upload/root',
+
+    verifyUser,
+
+    multipleUpload,
+
+    addNewFilesToRootDirectory
+)
 
 router.post(
     '/upload/:parentDirectory',
@@ -13,7 +23,6 @@ router.post(
     verifyUser,
     
     multipleUpload,
-    // upload,
 
     addNewFilesToCorrespondingDirectory  
 )
