@@ -74,6 +74,20 @@ const createChildDirectory = async (request, response) => {
     }
 }
 
+const getFilesAndDirectoriesFromRoot = async (request, response) => {
+    const tenantId = request.user.tenantId
+    try {
+        const rootDirectory = await findRootDirectory(tenantId)
+
+        const filesAndDirectories = await getFilesAndDirectoriesWithUrlId(tenantId, rootDirectory.urlId)
+
+        response.status(200).send(setResponseBody("Resource retrieved successfully", null, filesAndDirectories))
+    }
+    catch(error) {
+        response.status(500).send({ message: error.message})
+    }
+}
+
 const getFilesAndDirectoriesByParentId = async (request, response) => {
     const urlId = request.params.parentDirectory
     const tenantId = request.user.tenantId
@@ -97,6 +111,7 @@ module.exports = {
     createDirectoryUnderRoot,
     createRootDirectory,
     createChildDirectory,
+    getFilesAndDirectoriesFromRoot,
     getFilesAndDirectoriesByParentId
 
 }

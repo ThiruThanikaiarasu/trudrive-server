@@ -2,7 +2,7 @@ const express = require('express')
 const router = express.Router()
 
 const { verifyUser } = require('../middleware/verify')
-const { createChildDirectory, getFilesAndDirectoriesByParentId, createDirectoryUnderRoot } = require('../controllers/directoryController')
+const { createChildDirectory, getFilesAndDirectoriesByParentId, createDirectoryUnderRoot, getFilesAndDirectoriesFromRoot } = require('../controllers/directoryController')
 
 
 router.post(
@@ -20,6 +20,14 @@ router.post(
     verifyUser,
 
     createChildDirectory
+)
+
+router.get(
+    '/root',
+
+    verifyUser,
+
+    getFilesAndDirectoriesFromRoot
 )
 
 router.get(
