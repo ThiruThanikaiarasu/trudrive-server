@@ -11,6 +11,7 @@ const connectToDatabase = require('./database/connection')
 const userRoute = require('./routes/userRoute')
 const directoryRoute = require('./routes/directoryRoute')
 const fileRoute = require('./routes/fileRoute')
+const googleAuthRoute = require('./routes/googleAuthRoute')
 const { connectToRedis } = require('./cache/connection')
 
 app.use(cors({
@@ -41,6 +42,7 @@ app.use((req, res, next) => {
 app.use('/api/v1/user', userRoute)
 app.use('/api/v1/folders', directoryRoute)
 app.use('/api/v1/file', fileRoute)
+app.use('/api/v1/google-auth', googleAuthRoute)
 
 connectToDatabase()
     .then(() => {
