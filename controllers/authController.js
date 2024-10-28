@@ -8,6 +8,8 @@ const { findUserByEmailWithPassword, findUserByEmail, createUser } = require('..
 const { generateToken, setTokenCookie } = require('../services/tokenServices')
 const { generateOtp, getOtpDataByEmail } = require('../services/authServices')
 const { sendOtpThroughEmail } = require('../services/emailServices')
+const OtpError = require('../errors/OtpError')
+const EmailError = require('../errors/EmailError')
 
 
 const signup = async (request, response) => {
@@ -74,40 +76,50 @@ const login = async (request, response) => {
 const sendSignupVerificationCode = async (request, response) => {
     const { email } = request.body
 
-    const session = await mongoose.startSession();
-    session.startTransaction();
-
+    const session = await mongoose.startSession()
+    
     try {
-        const existingUser = await findUserByEmail(email);
+        session.startTransaction()
+
+        const existingUser = await findUserByEmail(email)
         if (existingUser) {
-            await session.abortTransaction();
-            session.endSession();
-            return response.status(409).send(setResponseBody("Email id already exists", "existing_email", null));
+            await session.abortTransaction()
+            session.endSession()
+
+            return response.status(409).send(setResponseBody("Email id already exists", "existing_email", null))
         }
 
-        const otp = await generateOtp(email, session);
+        const otp = await generateOtp(email, session)
+        await sendOtpThroughEmail(email, otp)
 
-        await sendOtpThroughEmail(email, otp);
+        await session.commitTransaction()
+        session.endSession()
 
-        await session.commitTransaction();
-        session.endSession();
-        response.status(200).send(setResponseBody("OTP sent.", null, null));
+        response.status(200).send(setResponseBody("OTP sent.", null, null))
     }
     catch(error) {
-        if (error.message === "Maximum attempts reached. Please try again later.") {
-            return response.status(429).send(setResponseBody(null, error.message, null)) 
+
+        if (error instanceof OtpError) {
+            return response.status(error.statusCode).send(setResponseBody(error.message, "otp_error", null)) 
         } 
+
+        if(error instanceof EmailError) {
+            return response.status(error.statusCode).send(setResponseBody(error.message, "email_error", null))
+        }
+
         response.status(500).send(setResponseBody(error.message, "server_error", null))
     }
 }
 
 const verifyOtp = async (request, response) => {
-    console.log(request.body)
     const { email, otp } = request.body
     try {
         const otpData = await getOtpDataByEmail(email)
-        console.log(otpData.otp)
-        console.log(otp)
+
+        if(!otpData) {
+            return response.status(410).send(setResponseBody("OTP expired. Request new one.", "otp_expired", null))
+        }
+
         if(otpData.otp.toString() !== otp.toString()) {
             return response.status(401).send(setResponseBody("Incorrect PIN", "verification_failed", null))
         }
@@ -115,7 +127,7 @@ const verifyOtp = async (request, response) => {
         response.status(200).send(setResponseBody("Verification successful", null, null))
     }
     catch(error) {
-        response.status(500).send(setResponseBody(null, "An unexpected error occurred.", null))
+        response.status(500).send(setResponseBody(error.message, "An unexpected error occurred.", null))
     }
 }
 

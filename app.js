@@ -8,6 +8,7 @@ const cors = require('cors')
 const PORT = process.env.PORT
 const connectToDatabase = require('./database/connection')
 
+const authRoute = require('./routes/authRoute')
 const userRoute = require('./routes/userRoute')
 const directoryRoute = require('./routes/directoryRoute')
 const fileRoute = require('./routes/fileRoute')
@@ -27,22 +28,22 @@ app.get('/', (request, response) => {
 })
 
 app.use((req, res, next) => {
-    const start = Date.now(); // Capture the start time
+    const start = Date.now()
     
-    // Hook into the response finishing event
     res.on('finish', () => {
-        const end = Date.now(); // Capture the end time
-        const duration = end - start; // Calculate the duration
+        const end = Date.now()
+        const duration = end - start
         console.log(`${req.method} ${req.originalUrl} took ${duration} ms`);
-    });
+    })
 
-    next(); // Proceed to the next middleware/route handler
+    next()
 });
 
+app.use('/api/v1/auth', authRoute)
+app.use('/api/v1/google-auth', googleAuthRoute)
 app.use('/api/v1/user', userRoute)
 app.use('/api/v1/folders', directoryRoute)
 app.use('/api/v1/file', fileRoute)
-app.use('/api/v1/google-auth', googleAuthRoute)
 
 connectToDatabase()
     .then(() => {

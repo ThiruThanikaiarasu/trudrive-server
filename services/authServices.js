@@ -1,54 +1,63 @@
 const moment = require('moment')
+
 const otpModel = require("../models/otpModel")
+const OtpError = require('../errors/OtpError')
+const { OTP_EXPIRY_MINUTES, MAX_ATTEMPTS } = require('../config/constants')
 
-const MAX_ATTEMPTS = 3
 
-const generateOtp = async (email) => {
-    let otpDoc = await otpModel.findOne({ email })
+const generateOtp = async (email, session) => {
 
-    if (otpDoc) {
-        if (otpDoc.attempts < MAX_ATTEMPTS) {
-            const otp = Math.floor(100000 + Math.random() * 900000).toString()
-            const expiresAt = moment().add(1, 'minutes').toDate()
+    let existingOtp = await checkForExistingOtp(email)
 
-            otpDoc.otp = otp
-            otpDoc.expiresAt = expiresAt
-            otpDoc.attempts += 1
+    if (existingOtp) {
+        if (existingOtp.attempts >= MAX_ATTEMPTS) {
+            throw new OtpError("Too many attempts", 429)
+        } 
 
-            await otpDoc.save()
+        return await updateOtp(existingOtp, session)
+    } 
 
-            return otp
-        } else {
-            throw new Error("Maximum attempts reached. Please try again later.")
-        }
-    } else {
-        const otp = Math.floor(100000 + Math.random() * 900000).toString()
-        const expiresAt = moment().add(5, 'minutes').toDate()
-
-        const otpData = {
-            email,
-            otp,
-            expiresAt,
-            attempts: 1
-        }
-
-        await generateOtpDocument(otpData)
-
-        return otp
-    }
+    return await createOtp(email, session) 
 }
 
-const generateOtpDocument = async (otpData) => {
-    const newOtp = new otpModel(otpData)
-    console.log(otpData)
-    return await newOtp.save()
+const createOtp = async (email, session) => {
+    const otp = generateRandomOtp()
+    const expiresAt = moment().add(OTP_EXPIRY_MINUTES, 'minutes').toDate()
+
+    const otpData = {
+        email, 
+        otp, 
+        expiresAt, 
+        attempts: 1, 
+    }
+
+    await otpModel.create([otpData], {session})
+
+    return otp
+}
+
+const updateOtp = async (otpDocument, session) => {
+    const otp = generateRandomOtp()
+    
+    otpDocument.otp = otp
+    otpDocument.expiresAt = moment().add(OTP_EXPIRY_MINUTES, 'minutes').toDate()
+    otpDocument.attempts += 1
+
+    await otpDocument.save({session})
+
+    return otp
+}
+
+const generateRandomOtp = () => {
+    return Math.floor(100000 + Math.random() * 900000).toString()
+}
+
+const checkForExistingOtp = async (email) => {
+    return await otpModel.findOne({ email })
 }
 
 const getOtpDataByEmail = async (email) => {
     const otpData = await otpModel.findOne({ email })
-    if(!otpData) {
-        throw new Error("No Verification code was found.")
-    }
 
     return otpData
 }

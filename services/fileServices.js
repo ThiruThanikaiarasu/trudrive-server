@@ -2,7 +2,7 @@ const crypto = require('crypto')
 const sizeOf = require('image-size')
 const { PutObjectCommand } = require('@aws-sdk/client-s3')
 
-const s3  = require('../configuration/s3Config')
+const s3  = require('../config/s3Config')
 const fileModel = require('../models/fileModel')
 const { createUrlIdForFile } = require('./utilityServices')
 

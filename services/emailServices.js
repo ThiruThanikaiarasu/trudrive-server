@@ -1,10 +1,15 @@
 const path = require('path')
 const fs = require('fs')
 
-const transporter = require('../configuration/smtpConfig')
+const transporter = require('../config/smtpConfig')
 
 const sendOtpThroughEmail = (to, otp) => {
     try{
+
+        if (!to || !otp) {
+            throw new EmailError('Recipient email and OTP must be provided.', 400)
+        }
+
         const templatePath = path.join(__dirname, '../templates/otpTemplate.html')
         let htmlContent = fs.readFileSync(templatePath, 'utf8')
 
@@ -30,7 +35,7 @@ const sendOtpThroughEmail = (to, otp) => {
         return transporter.sendMail(mailOptions)
     }
     catch(error) {
-        throw new Error(error)
+        throw error
     }
     
 }

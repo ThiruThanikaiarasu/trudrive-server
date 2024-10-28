@@ -1,4 +1,4 @@
-const oAuth2Client = require('../configuration/googleOAuthConfig')
+const oAuth2Client = require('../config/googleOAuthConfig')
 
 const generateAuthUrl = () => {
     return oAuth2Client.generateAuthUrl({
