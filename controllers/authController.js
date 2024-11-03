@@ -62,6 +62,7 @@ const login = async (request, response) => {
             secure: true,
             sameSite: 'None'
         }
+        console.log(existingUser)
         const {password: _, _id, role, __v, tenantId, ...userData} = existingUser._doc
 
         const token = existingUser.generateAccessJWT()     
