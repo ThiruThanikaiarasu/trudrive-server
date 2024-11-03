@@ -1,9 +1,17 @@
 const mongoose = require('mongoose')
 const bcrypt = require('bcryptjs')
-const jwt = require('jsonwebtoken')
+const jwt = require('jsonwebtoken');
+
+const { profileColors } = require('../config/constants')
+
 
 const userSchema = new mongoose.Schema(
     {
+        accountType: {
+            type: String,
+            enum: ['google', 'email'],
+            default: 'email'
+        },
         firstName: {
             type: String, 
             required: [true, "First name is a mandatory field"],
@@ -24,8 +32,11 @@ const userSchema = new mongoose.Schema(
         },
         password: {
             type: String, 
-            required: [true, "Password is a mandatory field"],
-            select: false
+            required: function() {
+                return this.accountType === 'email';
+            },
+            select: false, 
+            max: 25,
         },
         profile: {
             type: String, 
@@ -42,7 +53,12 @@ const userSchema = new mongoose.Schema(
             required: function() {
                 return this.role === "user"
             }
-        }
+        },
+        profile: {
+            letter: { type: String },
+            background: { type: String },
+            color: { type: String },
+        },
     },
     {
         collection: 'users'
@@ -54,6 +70,18 @@ const userSchema = new mongoose.Schema(
 
 userSchema.pre("save", function(next) {
     const user = this
+
+    if (!user.profile || !user.profile.letter) {
+        const firstLetter = user.firstName.charAt(0).toUpperCase();
+        const randomColor = profileColors[Math.floor(Math.random() * profileColors.length)];
+
+        user.profile = {
+            letter: firstLetter,
+            background: randomColor.background,
+            color: randomColor.color,
+        };
+    }
+
 
     if(!user.isModified('password')) return next()    // checks if the password is changed or not 
 

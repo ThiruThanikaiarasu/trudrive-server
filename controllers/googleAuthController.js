@@ -20,7 +20,7 @@ const handleGoogleAuthCallback = async (request, response) => {
     try {
         const userData = await getUserDataFromCode(code, response)
 
-        response.redirect(process.env.CORS_ORIGIN_URL)
+        response.redirect(process.env.CORS_ORIGIN_URL )
     } 
     catch(error) {
         response.status(500).send(setResponseBody(error.message, "server_error", null))

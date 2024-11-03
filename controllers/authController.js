@@ -36,7 +36,7 @@ const signup = async (request, response) => {
         const token = generateToken(userToBeRegistered)
         setTokenCookie(response, token)
 
-        const {password: userPassword, __v: userVersion, tenantId: userTenantId, _id: userId, ...userData} = userToBeRegistered._doc
+        const {password: userPassword, __v: userVersion, tenantId: userTenantId, role: userRole, accountType: userAccountType, _id: userId, ...userData} = userToBeRegistered._doc
         response.status(201).send(setResponseBody("User Created Successfully", null, userData))
     } 
     catch(error) {
