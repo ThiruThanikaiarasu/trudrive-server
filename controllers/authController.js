@@ -24,7 +24,6 @@ const signup = async (request, response) => {
         const newUser = {
                     firstName, 
                     lastName, 
-                    phone, 
                     email, 
                     password, 
                     tenantId 

@@ -1,7 +1,7 @@
 const express = require('express')
 const router = express.Router()
 
-const { getGoogleAuthPageUrl, handleGoogleAuthCallback } = require('../controllers/googleAuthController')
+const { getGoogleAuthPageUrl, handleGoogleAuthCallback, fetchGoogleAuthenticatedUserData } = require('../controllers/googleAuthController')
 
 
 router.get(
@@ -10,9 +10,16 @@ router.get(
     getGoogleAuthPageUrl
 )
 
-router.get('/verify-user', 
+router.get(
+    '/verify-user', 
 
     handleGoogleAuthCallback
+)
+
+router.get(
+    '/user-data',
+
+    fetchGoogleAuthenticatedUserData,
 )
 
 module.exports = router

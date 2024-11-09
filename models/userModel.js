@@ -38,7 +38,7 @@ const userSchema = new mongoose.Schema(
             select: false, 
             max: 25,
         },
-        profile: {
+        profileImage: {
             type: String, 
 
         },
